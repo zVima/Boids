@@ -20,16 +20,14 @@ public class BoidManager : MonoBehaviour
   {
     foreach(Boid boid in boids) {
       List<Transform> nearbyBoidTransforms = GetNearbyBoids(boid);
-      // boid.GetComponentInChildren<SpriteRenderer>().color = Color.Lerp(Color.white, Color.red, nearbyBoidTransforms.Count / 6f);
 
       Vector2 nextMove = Vector2.zero;
-      Vector2 cohesion;
-      Vector2 alignment;
-      Vector2 seperation;
-      int movesAdded = 0;
+
+      // Cohesion
       if(settings.cohesionActivated) {
-        movesAdded++;
-        cohesion = CalculateCohesion(boid, nearbyBoidTransforms);
+        Vector2 cohesion = CalculateCohesion(boid, nearbyBoidTransforms);
+        // print("Cohesion Sqrt Magnitude: " + cohesion.sqrMagnitude);
+        // print("Cohesion Weight Sqrt: " + settings.cohesionWeight * settings.cohesionWeight);
 
         if (cohesion.sqrMagnitude > settings.cohesionWeight * settings.cohesionWeight) {
           cohesion.Normalize();
@@ -38,9 +36,12 @@ public class BoidManager : MonoBehaviour
 
         nextMove += cohesion;
       }
+
+      // Alignment
       if(settings.alignmentActivated) {
-        movesAdded++;
-        alignment = CalculateAlignment(boid, nearbyBoidTransforms);
+        Vector2 alignment = CalculateAlignment(boid, nearbyBoidTransforms);
+        // print("Alignment Sqrt Magnitude: " + alignment.sqrMagnitude);
+        // print("Cohesion Weight Sqrt: " + settings.alignmentWeight * settings.alignmentWeight);
 
         if (alignment.sqrMagnitude > settings.alignmentWeight * settings.alignmentWeight) {
           alignment.Normalize();
@@ -49,9 +50,12 @@ public class BoidManager : MonoBehaviour
 
         nextMove += alignment;
       }
+
+      // Seperation
       if(settings.seperationActivated) {
-        movesAdded++;
-        seperation = CalculateSeperation(boid, nearbyBoidTransforms);
+        Vector2 seperation = CalculateSeperation(boid, nearbyBoidTransforms);
+        // print("Seperation Sqrt Magnitude: " + seperation.sqrMagnitude);
+        // print("Cohesion Weight Sqrt: " + settings.seperationWeight * settings.seperationWeight);
 
         if (seperation.sqrMagnitude > settings.seperationWeight * settings.seperationWeight) {
           seperation.Normalize();
@@ -61,6 +65,9 @@ public class BoidManager : MonoBehaviour
         nextMove += seperation;
       }
 
+      // Steering towards the new Vector, instead of snapping towards it
+      // Vector2 v = nextMove.normalized * settings.maxSpeed - nextMove;
+      // nextMove = Vector2.ClampMagnitude(v, settings.steerForce);
       float angle = Vector2.SignedAngle(boid.transform.up, nextMove);
       angle = Mathf.Clamp(angle, -settings.steerForce, settings.steerForce);
       nextMove = Quaternion.Euler(0, 0, angle) * boid.transform.up;
@@ -69,6 +76,7 @@ public class BoidManager : MonoBehaviour
     }
   }
 
+  // Returns nearby Boids for a given Boid
   List<Transform> GetNearbyBoids(Boid boid) {
     List<Transform> context = new List<Transform>();
     Collider2D[] contextColliders = Physics2D.OverlapCircleAll(boid.transform.position, settings.detectionRadius);
@@ -81,6 +89,7 @@ public class BoidManager : MonoBehaviour
     return context;
   }
 
+  // Calculation for Cohesion Behavior
   Vector2 CalculateCohesion(Boid boid, List<Transform> transformOfNearbyBoids) {
     Vector2 avgPosition = Vector2.zero;
     
@@ -97,6 +106,7 @@ public class BoidManager : MonoBehaviour
     return avgPosition -= (Vector2) boid.transform.position;
   }
 
+  // Calculation for Alignment Behavior
   Vector2 CalculateAlignment(Boid boid, List<Transform> transformOfNearbyBoids) {
     Vector2 avgDirection = Vector2.zero;
    
@@ -113,6 +123,7 @@ public class BoidManager : MonoBehaviour
     return avgDirection;
   }
 
+  // Calculation for Seperation Behavior
   Vector2 CalculateSeperation(Boid boid, List<Transform> transformOfNearbyBoids) {
     Vector2 avgPosition = Vector2.zero;
 

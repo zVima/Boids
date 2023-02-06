@@ -2,11 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Spawner : MonoBehaviour
-{
+public class Spawner : MonoBehaviour {
   public Boid prefab;
-  [Range(10, 750)]
-  public int spawnCount = 1;
+  [Range(10, 2000)]
+  public int spawnCount = 250;
   [Range(1f, 10f)]
   public float spawnRadius = 2.5f;
   public float spawnDensity = 0.2f;
@@ -22,11 +21,10 @@ public class Spawner : MonoBehaviour
           Boid boid = Instantiate(prefab, position, Quaternion.identity) as Boid;
           boid.transform.up = Random.insideUnitCircle;
 
-          Color randomColor = Color.Lerp(new Color(0f, 90f/255f, 1f), new Color(0f, 130f/255f, 1f), Random.Range(0f, 1f));
+          Color randomColor = Color.Lerp(new Color(0f, 75f/255f, 1f), new Color(0f, 140f/255f, 1f), Random.Range(0f, 1f));
           boid.SetColor(randomColor);
 
           boids.Add(boid);
       }
   }
-
 }
