@@ -34,7 +34,9 @@ public class BoidManager : MonoBehaviour
           cohesion *= settings.cohesionWeight;
         }
 
-        nextMove += cohesion;
+        float speed = Mathf.Lerp(settings.minSpeed, settings.maxSpeed, cohesion.magnitude);
+
+        nextMove += cohesion * speed;
       }
 
       // Alignment
@@ -48,7 +50,9 @@ public class BoidManager : MonoBehaviour
           alignment *= settings.alignmentWeight;
         }
 
-        nextMove += alignment;
+        float speed = Mathf.Lerp(settings.minSpeed, settings.maxSpeed, alignment.magnitude);
+
+        nextMove += alignment * speed;
       }
 
       // Seperation
@@ -62,12 +66,12 @@ public class BoidManager : MonoBehaviour
           seperation *= settings.seperationWeight;
         }
 
-        nextMove += seperation;
+        float speed = Mathf.Lerp(settings.minSpeed, settings.maxSpeed, seperation.magnitude);
+
+        nextMove += seperation * speed;
       }
 
       // Steering towards the new Vector, instead of snapping towards it
-      // Vector2 v = nextMove.normalized * settings.maxSpeed - nextMove;
-      // nextMove = Vector2.ClampMagnitude(v, settings.steerForce);
       float angle = Vector2.SignedAngle(boid.transform.up, nextMove);
       angle = Mathf.Clamp(angle, -settings.steerForce, settings.steerForce);
       nextMove = Quaternion.Euler(0, 0, angle) * boid.transform.up;

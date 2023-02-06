@@ -14,9 +14,6 @@ public class Boid : MonoBehaviour
   {
     this.settings = settings;
     boidCollider = GetComponent<Collider2D>();
-
-    float startSpeed = (settings.minSpeed * settings.maxSpeed) / 2;
-    // transform.position = transform.position * startSpeed;
   }
 
   public void SetColor(Color color)
@@ -51,7 +48,7 @@ public class Boid : MonoBehaviour
 
     transform.position = newPosition;
     transform.up = velocity;
-    transform.position += (Vector3) velocity * settings.speed * Time.deltaTime;
+    transform.position += (Vector3) velocity * Time.deltaTime;
 
   }
 

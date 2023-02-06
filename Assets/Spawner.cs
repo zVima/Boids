@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class Spawner : MonoBehaviour {
   public Boid prefab;
-  [Range(10, 2000)]
+  public BoidSettings settings;
+  [Range(10, 5000)]
   public int spawnCount = 250;
   [Range(1f, 10f)]
   public float spawnRadius = 2.5f;
@@ -18,8 +19,11 @@ public class Spawner : MonoBehaviour {
       {
           Vector2 randomViewport = new Vector2(Random.Range(0f, 1f), Random.Range(0f, 1f));
           Vector2 position = Camera.main.ViewportToWorldPoint(randomViewport);
+
           Boid boid = Instantiate(prefab, position, Quaternion.identity) as Boid;
-          boid.transform.up = Random.insideUnitCircle;
+
+          float startSpeed = (settings.minSpeed + settings.maxSpeed) / 2;
+          boid.transform.up = Random.insideUnitCircle * startSpeed;
 
           Color randomColor = Color.Lerp(new Color(0f, 75f/255f, 1f), new Color(0f, 140f/255f, 1f), Random.Range(0f, 1f));
           boid.SetColor(randomColor);

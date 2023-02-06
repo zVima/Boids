@@ -7,7 +7,6 @@ public class BoidSettings : ScriptableObject
 {
     public float detectionRadius = 0.5f;
     public float seperationRadius = 0.25f;
-    public float speed = 0.8f;
     public float minSpeed = 2f;
     public float maxSpeed = 5f;
     public float steerForce = 0.8f;
