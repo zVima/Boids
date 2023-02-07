@@ -30,6 +30,31 @@ public class Boid : MonoBehaviour
   }
 
   public void UpdateBoid(Vector2 velocity) {
+    Vector3 newPos;
+    float speed = Mathf.Lerp(settings.minSpeed, settings.maxSpeed, velocity.magnitude);
+
+    if (velocity == Vector2.zero) {
+      newPos = transform.up * Time.deltaTime * speed;
+    } else {
+      newPos = (Vector3) velocity * Time.deltaTime * speed;
+    }
+
+    transform.up = SteerTowards(newPos);
+
+    transform.position += transform.up * Time.deltaTime * speed;
+
+    if (!settings.avoidanceActivated) {
+      wrapAround();
+    }
+  }
+
+  public Vector3 SteerTowards(Vector3 vector) {
+    float angle = Vector2.SignedAngle(transform.up, vector);
+    angle = Mathf.Clamp(angle, -settings.steerForce, settings.steerForce);
+    return Quaternion.Euler(0, 0, angle) * transform.up;
+  }
+
+  void wrapAround() {
     Vector3 newPosition = transform.position;
     Vector3 screenPoint = Camera.main.WorldToScreenPoint(newPosition);
     if (screenPoint.x < 0) {
@@ -47,9 +72,6 @@ public class Boid : MonoBehaviour
     }
 
     transform.position = newPosition;
-    transform.up = velocity;
-    transform.position += (Vector3) velocity * Time.deltaTime;
-
   }
 
 }

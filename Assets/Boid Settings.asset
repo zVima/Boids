@@ -13,13 +13,15 @@ MonoBehaviour:
   m_Name: Boid Settings
   m_EditorClassIdentifier: 
   detectionRadius: 0.35
-  seperationRadius: 0.25
-  minSpeed: 2
-  maxSpeed: 5
-  steerForce: 0.9
+  seperationRadius: 0.15
+  minSpeed: 1
+  maxSpeed: 3
+  steerForce: 2
   cohesionActivated: 1
-  cohesionWeight: 1
+  cohesionWeight: 0.2
   alignmentActivated: 1
-  alignmentWeight: 1
+  alignmentWeight: 0.2
   seperationActivated: 1
   seperationWeight: 0.6
+  avoidanceActivated: 0
+  wallAvoidanceDist: 0.1

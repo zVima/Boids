@@ -167,7 +167,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab: {fileID: 1339198242482168596, guid: 759052d13e06eaf479271713822cb1f9, type: 3}
-  spawnCount: 100
+  settings: {fileID: 11400000, guid: 85dc02671190da248ba2beb93f4ad42f, type: 2}
+  spawnCount: 1500
   spawnRadius: 2.5
   spawnDensity: 0.2
 --- !u!4 &1877964697

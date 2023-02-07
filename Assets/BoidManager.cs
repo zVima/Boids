@@ -22,59 +22,42 @@ public class BoidManager : MonoBehaviour
       List<Transform> nearbyBoidTransforms = GetNearbyBoids(boid);
 
       Vector2 nextMove = Vector2.zero;
-
+      
       // Cohesion
       if(settings.cohesionActivated) {
         Vector2 cohesion = CalculateCohesion(boid, nearbyBoidTransforms);
-        // print("Cohesion Sqrt Magnitude: " + cohesion.sqrMagnitude);
-        // print("Cohesion Weight Sqrt: " + settings.cohesionWeight * settings.cohesionWeight);
 
         if (cohesion.sqrMagnitude > settings.cohesionWeight * settings.cohesionWeight) {
           cohesion.Normalize();
           cohesion *= settings.cohesionWeight;
         }
 
-        float speed = Mathf.Lerp(settings.minSpeed, settings.maxSpeed, cohesion.magnitude);
-
-        nextMove += cohesion * speed;
+        nextMove += cohesion;
       }
 
       // Alignment
       if(settings.alignmentActivated) {
         Vector2 alignment = CalculateAlignment(boid, nearbyBoidTransforms);
-        // print("Alignment Sqrt Magnitude: " + alignment.sqrMagnitude);
-        // print("Cohesion Weight Sqrt: " + settings.alignmentWeight * settings.alignmentWeight);
 
         if (alignment.sqrMagnitude > settings.alignmentWeight * settings.alignmentWeight) {
           alignment.Normalize();
           alignment *= settings.alignmentWeight;
         }
 
-        float speed = Mathf.Lerp(settings.minSpeed, settings.maxSpeed, alignment.magnitude);
-
-        nextMove += alignment * speed;
+        nextMove += alignment;
       }
 
       // Seperation
       if(settings.seperationActivated) {
         Vector2 seperation = CalculateSeperation(boid, nearbyBoidTransforms);
-        // print("Seperation Sqrt Magnitude: " + seperation.sqrMagnitude);
-        // print("Cohesion Weight Sqrt: " + settings.seperationWeight * settings.seperationWeight);
 
         if (seperation.sqrMagnitude > settings.seperationWeight * settings.seperationWeight) {
           seperation.Normalize();
           seperation *= settings.seperationWeight;
         }
 
-        float speed = Mathf.Lerp(settings.minSpeed, settings.maxSpeed, seperation.magnitude);
-
-        nextMove += seperation * speed;
+        nextMove += seperation;
       }
-
-      // Steering towards the new Vector, instead of snapping towards it
-      float angle = Vector2.SignedAngle(boid.transform.up, nextMove);
-      angle = Mathf.Clamp(angle, -settings.steerForce, settings.steerForce);
-      nextMove = Quaternion.Euler(0, 0, angle) * boid.transform.up;
 
       boid.UpdateBoid(nextMove);
     }
@@ -149,6 +132,26 @@ public class BoidManager : MonoBehaviour
     }
 
     return avgPosition;
+  }
+
+  // Calculation for Avoidance Behavior (EXPERIMENTAL)
+  Vector2 CalculateAvoidance(Boid boid) {
+    Vector3 newPos = boid.transform.up;
+    Vector3 screenPoint = Camera.main.WorldToScreenPoint(newPos);
+
+    if(screenPoint.x < 0 + settings.wallAvoidanceDist) {
+      newPos.x = -newPos.x;
+    } else if (screenPoint.x > Screen.width + settings.wallAvoidanceDist) {
+      newPos.x = -newPos.x;
+    }
+
+    if (screenPoint.y < 0 + settings.wallAvoidanceDist) {
+      newPos.y = -newPos.y;
+    } else if (screenPoint.y > Screen.height + settings.wallAvoidanceDist) {
+      newPos.y = -newPos.y;
+    }
+
+    return newPos;
   }
 
 }

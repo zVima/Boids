@@ -17,4 +17,6 @@ public class BoidSettings : ScriptableObject
     public float alignmentWeight = 0.15f;
     public bool seperationActivated = true;
     public float seperationWeight = 0.7f;
+    public bool avoidanceActivated = false;
+    public float wallAvoidanceDist = 0.1f;
 }
