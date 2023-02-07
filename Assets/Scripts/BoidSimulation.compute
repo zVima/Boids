@@ -1,0 +1,17 @@
+// Each #kernel tells which function to compile; you can have many kernels
+
+#pragma kernel CSMain
+
+struct Boid {
+    float3 position;
+    float3 velocity;
+    float4 color;
+};
+
+RWStructuredBuffer<Boid> boids;
+
+[numthreads(8, 1, 1)]
+void CSMain (uint id : SV_DispatchThreadID)
+{
+    Boid boid = boids[id];
+}

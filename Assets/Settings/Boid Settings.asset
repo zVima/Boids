@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   detectionRadius: 0.35
   seperationRadius: 0.15
-  minSpeed: 1
-  maxSpeed: 3
-  steerForce: 2
+  minSpeed: 0.5
+  maxSpeed: 1.5
+  steerForce: 3
   cohesionActivated: 1
-  cohesionWeight: 0.2
+  cohesionWeight: 0.548
   alignmentActivated: 1
-  alignmentWeight: 0.2
+  alignmentWeight: 0.774
   seperationActivated: 1
-  seperationWeight: 0.6
+  seperationWeight: 0.548
   avoidanceActivated: 0
   wallAvoidanceDist: 0.1
