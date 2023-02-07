@@ -27,11 +27,11 @@ public class BoidManager : MonoBehaviour
       if(settings.cohesionActivated) {
         Vector2 cohesion = CalculateCohesion(boid, nearbyBoidTransforms);
 
-        if (cohesion.sqrMagnitude > settings.cohesionWeight * settings.cohesionWeight) {
+        //if (cohesion.sqrMagnitude > settings.cohesionWeight * settings.cohesionWeight) {
           cohesion.Normalize();
           cohesion *= settings.cohesionWeight;
-        }
-
+        //}
+        
         nextMove += cohesion;
       }
 
@@ -39,10 +39,12 @@ public class BoidManager : MonoBehaviour
       if(settings.alignmentActivated) {
         Vector2 alignment = CalculateAlignment(boid, nearbyBoidTransforms);
 
-        if (alignment.sqrMagnitude > settings.alignmentWeight * settings.alignmentWeight) {
+        //if (alignment.sqrMagnitude > settings.alignmentWeight * settings.alignmentWeight) {
           alignment.Normalize();
           alignment *= settings.alignmentWeight;
-        }
+        //}
+
+        //alignment.Normalize();
 
         nextMove += alignment;
       }
@@ -51,10 +53,10 @@ public class BoidManager : MonoBehaviour
       if(settings.seperationActivated) {
         Vector2 seperation = CalculateSeperation(boid, nearbyBoidTransforms);
 
-        if (seperation.sqrMagnitude > settings.seperationWeight * settings.seperationWeight) {
+        //if (seperation.sqrMagnitude > settings.seperationWeight * settings.seperationWeight) {
           seperation.Normalize();
           seperation *= settings.seperationWeight;
-        }
+        //}
 
         nextMove += seperation;
       }
@@ -106,6 +108,10 @@ public class BoidManager : MonoBehaviour
     }
 
     avgDirection /= transformOfNearbyBoids.Count;
+
+    if(avgDirection != Vector2.zero) {
+      avgDirection.Normalize();
+    }
 
     return avgDirection;
   }

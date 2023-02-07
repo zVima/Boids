@@ -31,12 +31,13 @@ public class Boid : MonoBehaviour
 
   public void UpdateBoid(Vector2 velocity) {
     Vector3 newPos;
-    float speed = Mathf.Lerp(settings.minSpeed, settings.maxSpeed, velocity.magnitude);
-
+    float smoothSpeed = Sigmoid(velocity.magnitude);
+    float speed = Mathf.Lerp(settings.minSpeed, settings.maxSpeed, smoothSpeed);
+    
     if (velocity == Vector2.zero) {
-      newPos = transform.up * Time.deltaTime * speed;
+      newPos = transform.up;
     } else {
-      newPos = (Vector3) velocity * Time.deltaTime * speed;
+      newPos = (Vector3) velocity;
     }
 
     transform.up = SteerTowards(newPos);
@@ -46,6 +47,10 @@ public class Boid : MonoBehaviour
     if (!settings.avoidanceActivated) {
       wrapAround();
     }
+  }
+
+  private float Sigmoid(float x) {
+    return 1 / (1 + Mathf.Exp(-x));
   }
 
   public Vector3 SteerTowards(Vector3 vector) {
