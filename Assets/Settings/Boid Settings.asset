@@ -18,9 +18,9 @@ MonoBehaviour:
   maxSpeed: 1.5
   steerForce: 3
   cohesionActivated: 1
-  cohesionWeight: 0.548
+  cohesionWeight: 0.543
   alignmentActivated: 1
-  alignmentWeight: 0.774
+  alignmentWeight: 0.759
   seperationActivated: 1
   seperationWeight: 0.548
   avoidanceActivated: 0

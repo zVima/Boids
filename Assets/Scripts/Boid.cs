@@ -44,9 +44,7 @@ public class Boid : MonoBehaviour
 
     transform.position += transform.up * Time.deltaTime * speed;
 
-    if (!settings.avoidanceActivated) {
-      wrapAround();
-    }
+    wrapAround();
   }
 
   private float Sigmoid(float x) {

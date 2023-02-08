@@ -24,7 +24,7 @@ public class BoidManager : MonoBehaviour
       Vector2 nextMove = Vector2.zero;
       
       // Cohesion
-      if(settings.cohesionActivated) {
+      if(settings.cohesionWeight != 0f) {
         Vector2 cohesion = CalculateCohesion(boid, nearbyBoidTransforms);
 
         //if (cohesion.sqrMagnitude > settings.cohesionWeight * settings.cohesionWeight) {
@@ -36,7 +36,7 @@ public class BoidManager : MonoBehaviour
       }
 
       // Alignment
-      if(settings.alignmentActivated) {
+      if(settings.alignmentWeight != 0f) {
         Vector2 alignment = CalculateAlignment(boid, nearbyBoidTransforms);
 
         //if (alignment.sqrMagnitude > settings.alignmentWeight * settings.alignmentWeight) {
@@ -50,7 +50,7 @@ public class BoidManager : MonoBehaviour
       }
 
       // Seperation
-      if(settings.seperationActivated) {
+      if(settings.seperationWeight != 0f) {
         Vector2 seperation = CalculateSeperation(boid, nearbyBoidTransforms);
 
         //if (seperation.sqrMagnitude > settings.seperationWeight * settings.seperationWeight) {
@@ -138,26 +138,6 @@ public class BoidManager : MonoBehaviour
     }
 
     return avgPosition;
-  }
-
-  // Calculation for Avoidance Behavior (EXPERIMENTAL)
-  Vector2 CalculateAvoidance(Boid boid) {
-    Vector3 newPos = boid.transform.up;
-    Vector3 screenPoint = Camera.main.WorldToScreenPoint(newPos);
-
-    if(screenPoint.x < 0 + settings.wallAvoidanceDist) {
-      newPos.x = -newPos.x;
-    } else if (screenPoint.x > Screen.width + settings.wallAvoidanceDist) {
-      newPos.x = -newPos.x;
-    }
-
-    if (screenPoint.y < 0 + settings.wallAvoidanceDist) {
-      newPos.y = -newPos.y;
-    } else if (screenPoint.y > Screen.height + settings.wallAvoidanceDist) {
-      newPos.y = -newPos.y;
-    }
-
-    return newPos;
   }
 
 }
