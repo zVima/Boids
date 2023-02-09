@@ -2,11 +2,24 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public struct BoidStruct {
+  public Vector3 position;
+  public Vector3 velocity;
+  public Color color;
+}
+
 public class BoidManager : MonoBehaviour
 {
+
     public BoidSettings settings;
     Boid[] boids;
     Boid selectedBoid;
+
+    public ComputeShader boidShader;
+
+    private int kernelHandle;
+    private ComputeBuffer boidsInRangeBuffer;
+    private BoidStruct[] boidsInRange;      
 
   void Start()
   {
@@ -14,10 +27,34 @@ public class BoidManager : MonoBehaviour
     foreach(Boid boid in boids) {
         boid.Initialize(settings);
     }
+
+    kernelHandle = boidShader.FindKernel("CSMain");
+    
+    boidsInRangeBuffer = new ComputeBuffer(boids.Length, sizeof(float) * 7);
+    boidShader.SetBuffer(kernelHandle, "boidsInRange", boidsInRangeBuffer);
+
+    boidShader.SetFloat("cohesionWeight", settings.cohesionWeight);
+    boidShader.SetFloat("alignmentWeight", settings.alignmentWeight);
+    boidShader.SetFloat("seperationWeight", settings.seperationWeight);
+
+    boidShader.SetFloat("minSpeed", settings.minSpeed);
+    boidShader.SetFloat("maxSpeed", settings.maxSpeed);
+
+    boidShader.SetFloat("seperationRadius", settings.seperationRadius);
+    boidShader.SetFloat("steerForce", settings.steerForce);
   }
 
   void Update()
   {
+    // TODO: Neuer Boids In Range Algorithmus (Spatial partioning data structure, grid, octree)
+    // TODO: Einbauen des Compute Shaders
+
+    // boidsInRangeBuffer.SetData(boidsInRange);
+
+    // boidShader.Dispatch(kernelHandle, boidsInRange.Length, 1, 1);
+
+    // boidsInRangeBuffer.GetData(boidsInRange);
+
     foreach(Boid boid in boids) {
       List<Transform> nearbyBoidTransforms = GetNearbyBoids(boid);
 
@@ -27,42 +64,41 @@ public class BoidManager : MonoBehaviour
       if(settings.cohesionWeight != 0f) {
         Vector2 cohesion = CalculateCohesion(boid, nearbyBoidTransforms);
 
-        //if (cohesion.sqrMagnitude > settings.cohesionWeight * settings.cohesionWeight) {
+        if (cohesion.sqrMagnitude > settings.cohesionWeight * settings.cohesionWeight) {
           cohesion.Normalize();
-          cohesion *= settings.cohesionWeight;
-        //}
+        }
         
-        nextMove += cohesion;
+        nextMove += cohesion * settings.cohesionWeight;
       }
 
       // Alignment
       if(settings.alignmentWeight != 0f) {
         Vector2 alignment = CalculateAlignment(boid, nearbyBoidTransforms);
 
-        //if (alignment.sqrMagnitude > settings.alignmentWeight * settings.alignmentWeight) {
+        if (alignment.sqrMagnitude > settings.alignmentWeight * settings.alignmentWeight) {
           alignment.Normalize();
-          alignment *= settings.alignmentWeight;
-        //}
+        }
 
-        //alignment.Normalize();
-
-        nextMove += alignment;
+        nextMove += alignment * settings.alignmentWeight;
       }
 
       // Seperation
       if(settings.seperationWeight != 0f) {
         Vector2 seperation = CalculateSeperation(boid, nearbyBoidTransforms);
 
-        //if (seperation.sqrMagnitude > settings.seperationWeight * settings.seperationWeight) {
+        if (seperation.sqrMagnitude > settings.seperationWeight * settings.seperationWeight) {
           seperation.Normalize();
-          seperation *= settings.seperationWeight;
-        //}
+        }
 
-        nextMove += seperation;
+        nextMove += seperation * settings.seperationWeight;
       }
 
       boid.UpdateBoid(nextMove);
     }
+  }
+
+  void OnDestroy() {
+    boidsInRangeBuffer.Dispose();
   }
 
   // Returns nearby Boids for a given Boid

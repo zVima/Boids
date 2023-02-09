@@ -8,10 +8,76 @@ struct Boid {
     float4 color;
 };
 
-RWStructuredBuffer<Boid> boids;
+Boid selectedBoid;
+RWStructuredBuffer<Boid> boidsInRange;
 
-[numthreads(8, 1, 1)]
-void CSMain (uint id : SV_DispatchThreadID)
+int boidsInRangeCount;
+
+float seperationRadius;
+
+float cohesionWeight;
+float alignmentWeight;
+float seperationWeight;
+
+float minSpeed;
+float maxSpeed;
+
+float steerForce;
+
+[numthreads(32, 1, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    Boid boid = boids[id];
+    float3 avgPosition;
+    float3 avgDirection;
+    float3 avgSeperationPosition;
+
+    int boidsInSeperationRange;
+
+    for (int index = 0; index < boidsInRangeCount; index++) {
+        avgPosition += boidsInRange[index].position;
+        avgDirection += boidsInRange[index].velocity;
+
+        float3 distance = selectedBoid.position - boidsInRange[index].position;
+        float distanceSquared = dot(distance, distance);
+
+        if (distanceSquared < seperationRadius) {
+            avgSeperationPosition += (boidsInRange[index].position - selectedBoid.position);
+            boidsInSeperationRange++;
+        }
+    }
+
+    avgPosition /= boidsInRangeCount;
+    avgDirection /= boidsInRangeCount;
+    avgSeperationPosition /= boidsInSeperationRange;
+
+    float3 cohesion = (avgPosition - selectedBoid.position);
+    float3 alignment = avgDirection;
+    float3 seperation = avgSeperationPosition;
+
+    if (dot(cohesion, cohesion) > cohesionWeight * cohesionWeight) {
+        cohesion = normalize(cohesion);
+    }
+
+    if (dot(alignment, alignment) > alignmentWeight * alignmentWeight) {
+        alignment = normalize(alignment);
+    }
+
+    if (dot(seperation, seperation) > seperationWeight * seperationWeight) {
+        seperation = normalize(seperation);
+    }
+
+    float3 nextMove;
+    nextMove += cohesion * cohesionWeight;
+    nextMove += alignment * alignmentWeight;
+    nextMove += seperation * seperationWeight;
+
+    float smoothSpeed = 1.0 / (1.0 + exp(-length(nextMove)));
+    float speed = lerp(minSpeed, maxSpeed, smoothSpeed);
+
+    float angle = dot(normalize(selectedBoid.velocity), normalize(nextMove));
+    angle = clamp(angle, -steerForce, steerForce);
+    float3x3 rotation = float3x3(cos(angle), 0, sin(angle), 0, 1, 0, -sin(angle), 0, cos(angle));
+    selectedBoid.velocity = mul(rotation, selectedBoid.velocity);
+
+    selectedBoid.position += selectedBoid.velocity * speed;
 }
