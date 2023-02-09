@@ -8,7 +8,6 @@ struct Boid {
     float4 color;
 };
 
-Boid selectedBoid;
 RWStructuredBuffer<Boid> boidsInRange;
 
 int boidsInRangeCount;
@@ -27,13 +26,15 @@ float steerForce;
 [numthreads(32, 1, 1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
+    Boid selectedBoid = boidsInRange[0];
+
     float3 avgPosition;
     float3 avgDirection;
     float3 avgSeperationPosition;
 
     int boidsInSeperationRange;
 
-    for (int index = 0; index < boidsInRangeCount; index++) {
+    for (int index = 1; index < boidsInRangeCount; index++) {
         avgPosition += boidsInRange[index].position;
         avgDirection += boidsInRange[index].velocity;
 
