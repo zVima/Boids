@@ -1,80 +1,81 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Collider2D))]
-public class Boid : MonoBehaviour
-{
-
+public class Boid : MonoBehaviour {
+  // Collider to calculate nearby Boids
   Collider2D boidCollider;
   public Collider2D BoidCollider { get { return boidCollider; } }
 
   BoidSettings settings;
-  SpriteRenderer spriteRenderer;
 
+  // Cached
+  Transform cachedTransform;
+
+  // Caching the Transfrom for performance
+  void Awake() {
+    cachedTransform = transform;
+  }
+
+  // Initializing the boid
   public void Initialize(BoidSettings settings)
   {
     this.settings = settings;
     boidCollider = GetComponent<Collider2D>();
   }
 
-  public void SetColor(Color color)
-  {
-
-    if (spriteRenderer == null) {
-      spriteRenderer = transform.GetComponentInChildren<SpriteRenderer>();
-    }
-
-    if (spriteRenderer != null) {
-      spriteRenderer.color = color;
-    }
-
-  }
-
+  // Updating the boids Position every Frame
   public void UpdateBoid(Vector2 velocity) {
     Vector3 newPos;
     float smoothSpeed = Sigmoid(velocity.magnitude);
     float speed = Mathf.Lerp(settings.minSpeed, settings.maxSpeed, smoothSpeed);
     
     if (velocity == Vector2.zero) {
-      newPos = transform.up;
+      newPos = cachedTransform.up;
     } else {
       newPos = (Vector3) velocity;
     }
 
-    transform.up = SteerTowards(newPos);
+    cachedTransform.up = SteerTowards(newPos);
 
-    transform.position += transform.up * Time.deltaTime * speed;
+    cachedTransform.position += cachedTransform.up * Time.deltaTime * speed;
 
     wrapAround();
   }
 
+  // Standard Sigmoid calculation
   private float Sigmoid(float x) {
     return 1 / (1 + Mathf.Exp(-x));
   }
 
-  public Vector3 SteerTowards(Vector3 vector) {
-    float angle = Vector2.SignedAngle(transform.up, vector);
+  // Smoothly steering towards the target Vector
+  public Vector3 SteerTowards(Vector3 targetVector) {
+    float angle = Vector2.SignedAngle(cachedTransform.up, targetVector);
     angle = Mathf.Clamp(angle, -settings.steerForce, settings.steerForce);
-    return Quaternion.Euler(0, 0, angle) * transform.up;
+    return Quaternion.Euler(0, 0, angle) * cachedTransform.up;
   }
 
+  // Wrapping the Boid around to the other side, when it leaves one
   void wrapAround() {
-    Vector3 newPosition = transform.position;
+    Vector3 newPosition = cachedTransform.position;
     Vector3 screenPoint = Camera.main.WorldToScreenPoint(newPosition);
-    if (screenPoint.x < 0) {
-      newPosition.x = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, 0, 0)).x;
-    }
-    else if (screenPoint.x > Screen.width) {
-      newPosition.x = Camera.main.ScreenToWorldPoint(Vector3.zero).x;
-    }
-    
-    if (screenPoint.y < 0) {
-      newPosition.y = Camera.main.ScreenToWorldPoint(new Vector3(0, Screen.height, 0)).y;
-    }
-    else if (screenPoint.y > Screen.height) {
-      newPosition.y = Camera.main.ScreenToWorldPoint(Vector3.zero).y;
-    }
+    Rect screenRect = new Rect(0, 0, Screen.width, Screen.height);
 
-    transform.position = newPosition;
+    if (!screenRect.Contains(screenPoint)) {
+      Vector3 screenBounds = screenRect.size;
+      screenBounds.z = 0;
+      Vector3 worldBounds = Camera.main.ScreenToWorldPoint(screenBounds);
+
+      if (screenPoint.x < 0) {
+        newPosition.x = worldBounds.x;
+      } else if (screenPoint.x > Screen.width) {
+        newPosition.x = -worldBounds.x;
+      }
+
+      if (screenPoint.y < 0) {
+        newPosition.y = worldBounds.y;
+      } else if (screenPoint.y > Screen.height) {
+        newPosition.y = -worldBounds.y;
+      }
+    }
+    cachedTransform.position = newPosition;
   }
-
 }

@@ -4,42 +4,39 @@ using UnityEngine;
 
 public class BoidManager : MonoBehaviour
 {
+  public BoidSettings settings;
+  Boid[] boids;
 
-    public BoidSettings settings;
-    Boid[] boids;
-    Boid selectedBoid;
+  private Grid grid;
 
-    private Grid grid;
-
+  // Creating a Grid with a given Cellsize
   void Awake() {
     grid = new Grid(settings.cellSize);
   }
 
-  void Start()
-  {
+  // Initializing all Boids
+  void Start() {
     boids = FindObjectsOfType<Boid> ();
     foreach(Boid boid in boids) {
         boid.Initialize(settings);
     }
-
-    Camera camera = GetComponent<Camera>();
-    camera.orthographicSize = settings.zoom;
   }
 
-  void Update()
-  {
+  // Calculating the Boids next Move every Frame
+  void Update() {
+    // Zooming in or out
     Camera camera = GetComponent<Camera>();
     camera.orthographicSize = settings.zoom;
-    
-    // TODO: Neuer Boids In Range Algorithmus (Spatial partioning data structure, grid, octree)
 
     foreach(Boid boid in boids) {
       List<Transform> nearbyBoids;
 
+      // Getting nearby Boids through either a spatial paritioning Grid or the Collider 2D
       if (settings.gridCalculation) {
         nearbyBoids = grid.GetNearbyBoids(boid, settings.detectionRadius);
+      } else {
+        nearbyBoids = GetNearbyBoids(boid);
       }
-      nearbyBoids = GetNearbyBoids(boid);
 
       Vector2 nextMove = Vector2.zero;
       
@@ -76,11 +73,15 @@ public class BoidManager : MonoBehaviour
         nextMove += seperation * settings.seperationWeight;
       }
 
-      grid.RemoveBoid(boid);
+      if (settings.gridCalculation) {
+        grid.RemoveBoid(boid);
+      }
 
       boid.UpdateBoid(nextMove);
 
-      grid.AddBoid(boid);
+      if (settings.gridCalculation) {
+        grid.AddBoid(boid);
+      }
     }
   }
 
@@ -158,28 +159,4 @@ public class BoidManager : MonoBehaviour
 
     return avgPosition;
   }
-
-  // void OnDrawGizmos() {
-  //   if (grid == null || settings.cellSize == 0) return;
-  //   int gridSize = Mathf.CeilToInt(Camera.main.orthographicSize * 2);
-
-  //   Vector3 bottomLeft = transform.position - Vector3.right * gridSize / 2 - Vector3.up * gridSize / 2;
-  //   Vector3 topRight = transform.position + Vector3.right * gridSize / 2 + Vector3.up * gridSize / 2;
-
-  //   int columns = Mathf.CeilToInt(gridSize / settings.cellSize);
-  //   int rows = Mathf.CeilToInt(gridSize / settings.cellSize);
-
-  //   for (int i = 0; i <= columns; i++) {
-  //     Vector3 start = bottomLeft + Vector3.right * i * settings.cellSize;
-  //     Vector3 end = start + Vector3.up * gridSize;
-  //     Debug.DrawLine(start, end, Color.grey);
-  //   }
-
-  //   for (int i = 0; i <= rows; i++) {
-  //     Vector3 start = bottomLeft + Vector3.up * i * settings.cellSize;
-  //     Vector3 end = start + Vector3.right * gridSize;
-  //     Debug.DrawLine(start, end, Color.grey);
-  //   }
-  // }
-
 }

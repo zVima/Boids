@@ -12,15 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d215df3ba628e244a72af8eb29a0e42, type: 3}
   m_Name: Boid Settings
   m_EditorClassIdentifier: 
-  zoom: 9.85
-  gridCalculation: 0
-  cellSize: 0.4
-  spawnCount: 1559
-  detectionRadius: 0.1
-  seperationRadius: 0.06
-  minSpeed: 0.1
-  maxSpeed: 1.95
-  steerForce: 1
-  cohesionWeight: 0.293
-  alignmentWeight: 0.285
-  seperationWeight: 0.526
+  gridCalculation: 1
+  cellSize: 0.5
+  zoom: 7.5
+  spawnCount: 2000
+  detectionRadius: 0.25
+  seperationRadius: 0.2
+  minSpeed: 1
+  maxSpeed: 3
+  steerForce: 3
+  cohesionWeight: 0.325
+  alignmentWeight: 0.3
+  seperationWeight: 0.4

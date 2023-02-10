@@ -7,12 +7,14 @@ public class Grid {
     public readonly float cellSize;
     private Dictionary<Vector2Int, List<Boid>> grid;
 
+    // Constructor for creating a new Grid
     public Grid(float cellSize) {
         this.cellSize = cellSize;
         this.gridSize = Mathf.CeilToInt(Camera.main.orthographicSize * 2 / cellSize);
         this.grid = new Dictionary<Vector2Int, List<Boid>>();
     }
 
+    // Adding a Boid to a Cell
     public void AddBoid(Boid boid) {
         Vector2Int cell = GetGridCell(boid.transform.position);
         if (!grid.ContainsKey(cell)) {
@@ -22,6 +24,7 @@ public class Grid {
         grid[cell].Add(boid);
     }
 
+    // Removing a Boid from a Cell
     public void RemoveBoid(Boid boid) {
         Vector2Int cell = GetGridCell(boid.transform.position);
         if (grid.ContainsKey(cell)) {
@@ -33,6 +36,7 @@ public class Grid {
         }
     }
 
+    // Checks for all Boids in the same Cell and returns a List with all the Boids within the Search Radius
     public List<Transform> GetNearbyBoids(Boid boid, float searchRadius) {
         List<Transform> nearbyBoids = new List<Transform>();
         Vector2Int cell = GetGridCell(boid.transform.position);
@@ -55,6 +59,7 @@ public class Grid {
         return nearbyBoids;
     }
 
+    // Getting the Cell in the Grid, from a given Position
     private Vector2Int GetGridCell(Vector2 position) {
         return new Vector2Int((int) (position.x / cellSize), (int) (position.y / cellSize));
     }
