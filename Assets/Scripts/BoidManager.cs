@@ -34,7 +34,12 @@ public class BoidManager : MonoBehaviour
     // TODO: Neuer Boids In Range Algorithmus (Spatial partioning data structure, grid, octree)
 
     foreach(Boid boid in boids) {
-      List<Transform> nearbyBoids = grid.GetNearbyBoids(boid, settings.detectionRadius);
+      List<Transform> nearbyBoids;
+
+      if (settings.gridCalculation) {
+        nearbyBoids = grid.GetNearbyBoids(boid, settings.detectionRadius);
+      }
+      nearbyBoids = GetNearbyBoids(boid);
 
       Vector2 nextMove = Vector2.zero;
       

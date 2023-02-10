@@ -6,6 +6,7 @@ using UnityEngine;
 public class BoidSettings : ScriptableObject
 {
     public float zoom = 60f;
+    public bool gridCalculation = true;
     public float cellSize = 5f;
 
     [Range(10, 5000)]

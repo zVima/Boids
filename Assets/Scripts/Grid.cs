@@ -36,11 +36,15 @@ public class Grid {
     public List<Transform> GetNearbyBoids(Boid boid, float searchRadius) {
         List<Transform> nearbyBoids = new List<Transform>();
         Vector2Int cell = GetGridCell(boid.transform.position);
+
         for (int x = cell.x - (int) (searchRadius / cellSize); x <= cell.x + (int) (searchRadius / cellSize); x++) {
             for (int y = cell.y - (int) (searchRadius / cellSize); y <= cell.y + (int) (searchRadius / cellSize); y++) {
+
                 Vector2Int key = new Vector2Int(x, y);
+                
                 if (grid.ContainsKey(key)) {
                     foreach (Boid nearbyBoid in grid[key]) {
+                        
                         if (Vector2.Distance(boid.transform.position, nearbyBoid.transform.position) <= searchRadius) {
                             nearbyBoids.Add(nearbyBoid.transform);
                         }
