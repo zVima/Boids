@@ -5,6 +5,12 @@ using UnityEngine;
 [CreateAssetMenu]
 public class BoidSettings : ScriptableObject
 {
+    public float zoom = 60f;
+    public float cellSize = 5f;
+
+    [Range(10, 5000)]
+    public int spawnCount = 250;
+
     public float detectionRadius = 0.5f;
     public float seperationRadius = 0.25f;
     public float minSpeed = 2f;

@@ -2,12 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct BoidStruct {
-  public Vector3 position;
-  public Vector3 velocity;
-  public Color color;
-}
-
 public class BoidManager : MonoBehaviour
 {
 
@@ -15,11 +9,12 @@ public class BoidManager : MonoBehaviour
     Boid[] boids;
     Boid selectedBoid;
 
-    public ComputeShader boidShader;
+    private Grid grid;
 
-    private int kernelHandle;
-    private ComputeBuffer boidsInRangeBuffer;
-    private List<BoidStruct> boidsInRange;
+  void Awake() {
+    grid = new Grid(settings.cellSize);
+  }
+
   void Start()
   {
     boids = FindObjectsOfType<Boid> ();
@@ -27,88 +22,61 @@ public class BoidManager : MonoBehaviour
         boid.Initialize(settings);
     }
 
-    kernelHandle = boidShader.FindKernel("CSMain");
-
-    int positionSize = sizeof(float) * 3;
-    int velocitySize = sizeof(float) * 3;
-    int colorSize = sizeof(float) * 4;
-    int stride = positionSize + velocitySize + colorSize;
-
-    boidsInRangeBuffer = new ComputeBuffer(boids.Length, stride);
-    boidShader.SetBuffer(kernelHandle, "boidsInRange", boidsInRangeBuffer);
-
-    boidShader.SetFloat("cohesionWeight", settings.cohesionWeight);
-    boidShader.SetFloat("alignmentWeight", settings.alignmentWeight);
-    boidShader.SetFloat("seperationWeight", settings.seperationWeight);
-
-    boidShader.SetFloat("minSpeed", settings.minSpeed);
-    boidShader.SetFloat("maxSpeed", settings.maxSpeed);
-
-    boidShader.SetFloat("seperationRadius", settings.seperationRadius);
-    boidShader.SetFloat("steerForce", settings.steerForce);
+    Camera camera = GetComponent<Camera>();
+    camera.orthographicSize = settings.zoom;
   }
 
   void Update()
   {
+    Camera camera = GetComponent<Camera>();
+    camera.orthographicSize = settings.zoom;
+    
     // TODO: Neuer Boids In Range Algorithmus (Spatial partioning data structure, grid, octree)
-    // TODO: Einbauen des Compute Shaders
 
     foreach(Boid boid in boids) {
-      // List<Transform> nearbyBoidTransforms = GetNearbyBoids(boid);
+      List<Transform> nearbyBoids = grid.GetNearbyBoids(boid, settings.detectionRadius);
 
-      // Vector2 nextMove = Vector2.zero;
+      Vector2 nextMove = Vector2.zero;
       
-      // // Cohesion
-      // if(settings.cohesionWeight != 0f) {
-      //   Vector2 cohesion = CalculateCohesion(boid, nearbyBoidTransforms);
+      // Cohesion
+      if(settings.cohesionWeight != 0f) {
+        Vector2 cohesion = CalculateCohesion(boid, nearbyBoids);
 
-      //   if (cohesion.sqrMagnitude > settings.cohesionWeight * settings.cohesionWeight) {
-      //     cohesion.Normalize();
-      //   }
+        if (cohesion.sqrMagnitude > settings.cohesionWeight * settings.cohesionWeight) {
+          cohesion.Normalize();
+        }
         
-      //   nextMove += cohesion * settings.cohesionWeight;
-      // }
+        nextMove += cohesion * settings.cohesionWeight;
+      }
 
-      // // Alignment
-      // if(settings.alignmentWeight != 0f) {
-      //   Vector2 alignment = CalculateAlignment(boid, nearbyBoidTransforms);
+      // Alignment
+      if(settings.alignmentWeight != 0f) {
+        Vector2 alignment = CalculateAlignment(boid, nearbyBoids);
 
-      //   if (alignment.sqrMagnitude > settings.alignmentWeight * settings.alignmentWeight) {
-      //     alignment.Normalize();
-      //   }
+        if (alignment.sqrMagnitude > settings.alignmentWeight * settings.alignmentWeight) {
+          alignment.Normalize();
+        }
 
-      //   nextMove += alignment * settings.alignmentWeight;
-      // }
+        nextMove += alignment * settings.alignmentWeight;
+      }
 
-      // // Seperation
-      // if(settings.seperationWeight != 0f) {
-      //   Vector2 seperation = CalculateSeperation(boid, nearbyBoidTransforms);
+      // Seperation
+      if(settings.seperationWeight != 0f) {
+        Vector2 seperation = CalculateSeperation(boid, nearbyBoids);
 
-      //   if (seperation.sqrMagnitude > settings.seperationWeight * settings.seperationWeight) {
-      //     seperation.Normalize();
-      //   }
+        if (seperation.sqrMagnitude > settings.seperationWeight * settings.seperationWeight) {
+          seperation.Normalize();
+        }
 
-      //   nextMove += seperation * settings.seperationWeight;
-      // }
+        nextMove += seperation * settings.seperationWeight;
+      }
 
-      GetNearbyBoidsStruct(boid);
-
-      boidsInRangeBuffer.SetData(boidsInRange);
-
-      boidShader.Dispatch(kernelHandle, boidsInRange.Count, 1, 1);
-
-      BoidStruct[] boidsInRangeArr = new BoidStruct[boidsInRange.Count];
-
-      boidsInRangeBuffer.GetData(boidsInRangeArr);
-
-      Vector3 nextMove = boidsInRangeArr[0].position * Time.deltaTime;
+      grid.RemoveBoid(boid);
 
       boid.UpdateBoid(nextMove);
-    }
-  }
 
-  void OnDestroy() {
-    boidsInRangeBuffer.Dispose();
+      grid.AddBoid(boid);
+    }
   }
 
   // Returns nearby Boids for a given Boid
@@ -122,30 +90,6 @@ public class BoidManager : MonoBehaviour
       }
     }
     return context;
-  }
-
-  void GetNearbyBoidsStruct(Boid currentBoid) {
-      Collider2D[] contextColliders = Physics2D.OverlapCircleAll(currentBoid.transform.position, settings.detectionRadius);
-      int counter = 0;
-
-      boidsInRange = new List<BoidStruct>();
-
-      BoidStruct currentBoidStruct = new BoidStruct();
-      currentBoidStruct.position = currentBoid.transform.position;
-      currentBoidStruct.velocity = currentBoid.transform.up;
-      boidsInRange.Add(currentBoidStruct);
-
-      foreach (Collider2D collider in contextColliders) {
-          if (collider != currentBoid.BoidCollider) {
-              BoidStruct nearbyBoid = new BoidStruct();
-              nearbyBoid.position = collider.transform.position;
-              nearbyBoid.velocity = collider.transform.up;
-              boidsInRange.Add(nearbyBoid);
-              counter++;
-          }
-      }
-
-      boidShader.SetInt("boidsInRangeCount", counter);
   }
 
   // Calculation for Cohesion Behavior
@@ -209,5 +153,28 @@ public class BoidManager : MonoBehaviour
 
     return avgPosition;
   }
+
+  // void OnDrawGizmos() {
+  //   if (grid == null || settings.cellSize == 0) return;
+  //   int gridSize = Mathf.CeilToInt(Camera.main.orthographicSize * 2);
+
+  //   Vector3 bottomLeft = transform.position - Vector3.right * gridSize / 2 - Vector3.up * gridSize / 2;
+  //   Vector3 topRight = transform.position + Vector3.right * gridSize / 2 + Vector3.up * gridSize / 2;
+
+  //   int columns = Mathf.CeilToInt(gridSize / settings.cellSize);
+  //   int rows = Mathf.CeilToInt(gridSize / settings.cellSize);
+
+  //   for (int i = 0; i <= columns; i++) {
+  //     Vector3 start = bottomLeft + Vector3.right * i * settings.cellSize;
+  //     Vector3 end = start + Vector3.up * gridSize;
+  //     Debug.DrawLine(start, end, Color.grey);
+  //   }
+
+  //   for (int i = 0; i <= rows; i++) {
+  //     Vector3 start = bottomLeft + Vector3.up * i * settings.cellSize;
+  //     Vector3 end = start + Vector3.right * gridSize;
+  //     Debug.DrawLine(start, end, Color.grey);
+  //   }
+  // }
 
 }

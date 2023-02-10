@@ -23,7 +23,7 @@ float maxSpeed;
 
 float steerForce;
 
-[numthreads(32, 1, 1)]
+[numthreads(1024, 1, 1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     Boid selectedBoid = boidsInRange[0];
